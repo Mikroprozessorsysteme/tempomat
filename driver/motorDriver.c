@@ -6,6 +6,7 @@
 */
 #include "motorDriver.h"
 #include <avr/io.h>
+#include <avr/interrupt.h>
 
 
 void setUp32MhzInternalOsc()
@@ -39,14 +40,30 @@ void setSpeed(int speed) {
 	TCD1.CCA = speed;
 }
 
-void setbrake(int brake) {
+void setBrake(int brake) {
 	// Set the frequency
 	TCD1.CCB = brake;
 }
 
-void odemetrie() {
 
-	PORTB.DIR &= ~(1 << 2);
-	TCD0.CTRLD |=  TC_EVACT_CAPT_gc;
+void initOdometrie() {
+	// interruplevel festlegen
+	PORTB.INTCTRL = 0x03;
+	//Interrupt an PORTB PIN2 freigeben
+	PORTB.INT0MASK = 0x04;
+	//Interrupt auf fallende Flanke einstellen
+	PORTB.PIN0CTRL = 0x02;
+}
+
+void odometrie() {
 	
+	/* pin 2 portB sollte über eventsystem an timer weitergeleitet werden
+	input capture mode
+	TCD0.CTRLD |=  TC_EVACT_CAPT_gc; */
+}
+
+ISR (PORTB_INT0_vect)
+{	
+	uint16_t after;
+	uint16_t before = blueOsGetUs();
 }
